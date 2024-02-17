@@ -2,6 +2,7 @@ use crate::sdf::sdf_type::*;
 use std::vec::Vec;
 use glm::DVec2;
 
+#[repr(C)]
 pub struct SDFBundle {
   circles: Vec<SDFCircle>,
   capsules: Vec<SDFCapsule>
