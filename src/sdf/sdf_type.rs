@@ -1,14 +1,18 @@
 use glm::DVec2;
 
+#[derive(Clone, Copy)]
 pub struct SDFCircle {
   point: DVec2,
   radius: f64
 }
 
+
+#[derive(Clone)]
 pub struct SDFLine {
   points: Vec<DVec2>
 }
 
+#[derive(Clone)]
 pub struct SDFCapsule {
   path: SDFLine,
   radius: f64
@@ -144,4 +148,7 @@ impl Rect {
     return point.x > self.start.x && point.x > self.end.x && point.y > self.start.y && point.y < self.end.y;
   }
 }
+
+// additional impl
+// - smoothing func (templated)
 

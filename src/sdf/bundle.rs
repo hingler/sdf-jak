@@ -1,11 +1,22 @@
 use crate::sdf::sdf_type::*;
-use std::vec::Vec;
+use std::{ops::Neg, vec::Vec};
 use glm::DVec2;
 
+#[derive(Clone)]
 #[repr(C)]
 pub struct SDFBundle {
   circles: Vec<SDFCircle>,
-  capsules: Vec<SDFCapsule>
+  capsules: Vec<SDFCapsule>,
+  fac: f64
+}
+
+impl Neg for SDFBundle {
+  type Output = SDFBundle;
+
+  fn neg(mut self) -> Self::Output {
+    self.fac *= -1.0f64;
+    return self;
+  }
 }
 
 // how to impl btwn c : rust?
@@ -16,7 +27,8 @@ impl SDFBundle {
   pub fn new() -> Self {
     return SDFBundle {
       circles: Vec::new(),
-      capsules: Vec::new()
+      capsules: Vec::new(),
+      fac: 1.0
     };
   }
 
@@ -37,6 +49,9 @@ impl SDFBundle {
   }
 }
 
+// how does this work when we introduce smoothing?
+// - i think we would smooth bundle-pairs on the c side
+
 impl Marchable for SDFBundle {
   fn dist(&self, point: &DVec2) -> f64 {
     let mut min_dist = f64::MAX;
@@ -48,6 +63,7 @@ impl Marchable for SDFBundle {
       min_dist = f64::min(min_dist, c.dist(point));
     }
 
-    return min_dist;
+    // hehe smile
+    return min_dist * self.fac;
   }
 }

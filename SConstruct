@@ -9,7 +9,7 @@ env.Append(CXXFLAGS=["-std=c++17"])
 compile_rust = Builder(action = "~/.cargo/bin/cargo build", src_suffix = ".toml")
 env.Append(BUILDERS = { 'Rust': compile_rust });
 RUST_CARGO = "Cargo.toml"
-res = env.Rust("target/debug/libsdf_jak", RUST_CARGO)
+res = env.Rust(env.Dir("target/debug/libsdf_jak"), RUST_CARGO)
 
 # need to set per platform :3
 RUST_LIB_PATH = "target/debug/libsdf_jak" + env["SHLIBSUFFIX"];
@@ -35,6 +35,9 @@ test_deps = [
   [test_dir + test + ".cpp" for test in test_src],
   RUST_LIB_PATH
 ]
+
+print("dasd")
+print(res)
 
 Default(res)
 Default(gtest_env.Program(base_dir + "/build/GTEST_sdfjak", test_deps))
