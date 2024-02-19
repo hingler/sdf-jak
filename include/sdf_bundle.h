@@ -11,6 +11,9 @@ extern "C" {
 struct SDFBundle;
 struct SDFSmoother;
 
+// theres basically no point in this except to have fun :)
+// integrate in cpp and test
+
 SDFSmoother* smoother_get(SDFBundle* a, SDFBundle* b, double k);
 
 double smoother_dist(SDFSmoother* s, double x, double y);
