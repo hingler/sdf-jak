@@ -5,14 +5,17 @@ except:
   env = Environment()
 
 env.Append(CXXFLAGS=["-std=c++17"])
+RUST_LIB_PATH = "target/debug/libsdf_jak" + env["SHLIBSUFFIX"];
 
-compile_rust = Builder(action = "~/.cargo/bin/cargo build", src_suffix = ".toml")
-env.Append(BUILDERS = { 'Rust': compile_rust });
 RUST_CARGO = "Cargo.toml"
-res = env.Rust(env.Dir("target/debug/libsdf_jak"), RUST_CARGO)
+res = env.Command(
+  target = RUST_LIB_PATH,
+  source = "Cargo.toml",
+  action = "cargo build",
+  chdir  = env.Dir(".")
+)
 
 # need to set per platform :3
-RUST_LIB_PATH = "target/debug/libsdf_jak" + env["SHLIBSUFFIX"];
 
 env.Append(CPPPATH = [[env.Dir(d) for d in [
   "include"
@@ -20,7 +23,7 @@ env.Append(CPPPATH = [[env.Dir(d) for d in [
 
 gtest = SConscript("./SConstruct_gtest", exports = 'env')
 
-gtest_env = env;
+gtest_env = env.Clone();
 gtest_env.Append(LIBS = [gtest])
 
 base_dir = Dir('#').abspath;
@@ -40,5 +43,8 @@ print("dasd")
 print(res)
 
 Default(res)
+
+
 Default(gtest_env.Program(base_dir + "/build/GTEST_sdfjak", test_deps))
+Return("res")
 
