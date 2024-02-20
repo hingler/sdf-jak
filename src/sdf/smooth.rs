@@ -14,10 +14,9 @@ pub struct  SDFSmooth<T: Marchable, U: Marchable> {
 
 pub type BundleSmooth = SDFSmooth<SDFBundle, SDFBundle>;
 
-impl SDFBundle {
-  fn dist_smooth(&self, point: &glm::DVec2, k: f64) -> f64 {
-    return k;
-  }
+pub fn smin_f(a: f64, b: f64, k: f64) -> f64 {
+  let h = f64::max(k - f64::abs(a - b), 0.0) / k;
+  return f64::min(a, b) - h * h * k * 0.25;
 }
 
 impl <T: Marchable, U: Marchable> Marchable for SDFSmooth<T, U> {
@@ -25,8 +24,7 @@ impl <T: Marchable, U: Marchable> Marchable for SDFSmooth<T, U> {
     let a = self.a.dist(point);
     let b = self.b.dist(point);
 
-    let h = f64::max(self.k - f64::abs(a - b), 0.0) / self.k;
-    return f64::min(a, b) - h * h * self.k * 0.25 * self.fac;
+    return smin_f(a, b, self.k);
   }
 }
 

@@ -30,6 +30,7 @@ void bundle_add_circle(SDFBundle* bundle, double x, double y, double radius);
 void bundle_add_capsule(SDFBundle* bundle, double* points, unsigned int point_count, double radius);
 
 double bundle_dist(SDFBundle* bundle, double x, double y);
+double bundle_smin(SDFBundle* bundle, double x, double y, double k);
 
 void bundle_free(SDFBundle* bundle);
 

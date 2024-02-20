@@ -60,6 +60,12 @@ pub unsafe extern "C" fn bundle_dist(bundle: *mut SDFBundle, x: c_double, y: c_d
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn bundle_smin(bundle: *mut SDFBundle, x: c_double, y: c_double, k: c_double) -> c_double {
+  let pt = glm::dvec2(x, y);
+  return (*bundle).dist_smooth(&pt, k);
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn bundle_free(bundle: *mut SDFBundle) {
   drop(Box::from_raw(bundle));
 }

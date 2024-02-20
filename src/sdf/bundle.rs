@@ -2,6 +2,8 @@ use crate::sdf::sdf_type::*;
 use std::{ops::Neg, vec::Vec};
 use glm::DVec2;
 
+use super::smooth::smin_f;
+
 #[derive(Clone)]
 #[repr(C)]
 pub struct SDFBundle {
@@ -46,6 +48,20 @@ impl SDFBundle {
     self.capsules.push(
       SDFCapsule::new_move(points, &radius)
     );
+  }
+
+  pub fn dist_smooth(&self, point: &glm::DVec2, k: f64) -> f64 {
+    let mut dist = f64::MAX;
+    for circle in &self.circles {
+      dist = smin_f(dist, circle.dist(point), k);
+    }
+
+    for capsule in &self.capsules {
+      dist = smin_f(dist, capsule.dist(point), k);
+    }
+
+    return dist;
+
   }
 }
 

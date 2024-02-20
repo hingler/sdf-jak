@@ -151,4 +151,3 @@ impl Rect {
 
 // additional impl
 // - smoothing func (templated)
-
