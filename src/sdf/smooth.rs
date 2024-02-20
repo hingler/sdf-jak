@@ -1,3 +1,5 @@
+use std::ops::Neg;
+
 use super::{bundle::SDFBundle, sdf_type::Marchable};
 
 
@@ -6,7 +8,8 @@ use super::{bundle::SDFBundle, sdf_type::Marchable};
 pub struct  SDFSmooth<T: Marchable, U: Marchable> {
   a: T,
   b: U,
-  k: f64
+  k: f64,
+  fac: f64
 }
 
 pub type BundleSmooth = SDFSmooth<SDFBundle, SDFBundle>;
@@ -23,19 +26,36 @@ impl <T: Marchable, U: Marchable> Marchable for SDFSmooth<T, U> {
     let b = self.b.dist(point);
 
     let h = f64::max(self.k - f64::abs(a - b), 0.0) / self.k;
-    return f64::min(a, b) - h * h * self.k * 0.25;
+    return f64::min(a, b) - h * h * self.k * 0.25 * self.fac;
+  }
+}
+
+impl <T: Marchable, U: Marchable> Neg for SDFSmooth<T, U> {
+  type Output = SDFSmooth<T, U>;
+
+  fn neg(mut self) -> Self::Output {
+    self.fac *= -1.0f64;
+    return self;
   }
 }
 
 impl <T: Marchable, U: Marchable> SDFSmooth<T, U> {
   pub fn new(a: T, b: U, k: f64) -> Self {
     return SDFSmooth {
-      a, b, k
+      a, b, k, fac: 1.0
     };
   }
 }
 
-// smoothing helpers
+// smoothing funcs
+
+pub fn smin(a: SDFBundle, b: SDFBundle, k: f64) -> SDFSmooth<SDFBundle, SDFBundle> {
+  return SDFSmooth::new(a, b, k);
+}
+
+pub fn ssub(a: SDFBundle, b: SDFBundle, k: f64) -> SDFSmooth<SDFBundle, SDFBundle> {
+  return -SDFSmooth::new(b, -a, k);
+}
 
 // writing the code for it?
 // - wondering if there's a way to arrange it with a builder
