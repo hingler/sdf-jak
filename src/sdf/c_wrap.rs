@@ -40,7 +40,9 @@ pub unsafe extern "C" fn bundle_add_circle(bundle: *mut SDFBundle, x: c_double, 
 #[no_mangle]
 pub unsafe extern "C" fn bundle_add_capsule(bundle: *mut SDFBundle, points: *mut c_double, point_count: c_uint, radius: c_double) {
   let points_dvec = points as *mut glm::DVec2;
+
   let mut point_vec = Vec::new();
+  // works - repr c on dvec2
   let mut point_cur: *mut glm::DVec2 = points_dvec;
   for _ in 0..point_count {
     // write manually lole

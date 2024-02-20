@@ -11,6 +11,12 @@ pub struct  SDFSmooth<T: Marchable, U: Marchable> {
 
 pub type BundleSmooth = SDFSmooth<SDFBundle, SDFBundle>;
 
+impl SDFBundle {
+  fn dist_smooth(&self, point: &glm::DVec2, k: f64) -> f64 {
+    return k;
+  }
+}
+
 impl <T: Marchable, U: Marchable> Marchable for SDFSmooth<T, U> {
   fn dist(&self, point: &glm::DVec2) -> f64 {
     let a = self.a.dist(point);
@@ -28,6 +34,8 @@ impl <T: Marchable, U: Marchable> SDFSmooth<T, U> {
     };
   }
 }
+
+// smoothing helpers
 
 // writing the code for it?
 // - wondering if there's a way to arrange it with a builder

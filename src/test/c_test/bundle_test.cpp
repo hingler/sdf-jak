@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "sdf_bundle.h"
+#include "sdf_jak/sdf_bundle.h"
 
 TEST(BundleTest, CreateBundle) {
   SDFBundle* bundle = bundle_get();
