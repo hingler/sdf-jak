@@ -9,6 +9,7 @@ use super::smooth::smin_f;
 pub struct SDFBundle {
   circles: Vec<SDFCircle>,
   capsules: Vec<SDFCapsule>,
+  k: f64,
   fac: f64
 }
 
@@ -25,11 +26,18 @@ impl Neg for SDFBundle {
 // - export ptr to bundle
 // - call c-like (ie pass ptr as first argument)
 
+const EPSILON_K: f64 = 0.00001;
+
 impl SDFBundle {
   pub fn new() -> Self {
+    return SDFBundle::new_s(0.0f64);
+  }
+  pub fn new_s(k_v: f64) -> Self {
+
     return SDFBundle {
       circles: Vec::new(),
       capsules: Vec::new(),
+      k: f64::max(k_v, EPSILON_K * 0.5),   // eff: 0
       fac: 1.0
     };
   }
@@ -50,18 +58,39 @@ impl SDFBundle {
     );
   }
 
-  pub fn dist_smooth(&self, point: &glm::DVec2, k: f64) -> f64 {
+  pub fn dist(&self, point: &glm::DVec2) -> f64 {
+    if self.k < EPSILON_K {
+      return self.dist_n(point);
+    } else {
+      return self.dist_s(point);
+    }
+  }
+
+  pub fn dist_s(&self, point: &glm::DVec2) -> f64 {
     let mut dist = f64::MAX;
     for circle in &self.circles {
-      dist = smin_f(dist, circle.dist(point), k);
+      dist = smin_f(dist, circle.dist(point), self.k);
     }
 
     for capsule in &self.capsules {
-      dist = smin_f(dist, capsule.dist(point), k);
+      dist = smin_f(dist, capsule.dist(point), self.k);
+    }
+
+    return dist * self.fac;
+
+  }
+
+  fn dist_n(&self, point: &glm::DVec2) -> f64 {
+    let mut dist = f64::MAX;
+    for circle in &self.circles {
+      dist = f64::min(dist, circle.dist(point));
+    }
+
+    for capsule in &self.capsules {
+      dist = f64::min(dist, capsule.dist(point));
     }
 
     return dist;
-
   }
 }
 

@@ -3,7 +3,7 @@
 #include "sdf_jak/sdf_bundle.h"
 
 TEST(BundleTest, CreateBundle) {
-  SDFBundle* bundle = bundle_get();
+  SDFBundle* bundle = bundle_get(0.0);
   bundle_add_circle(bundle, 0.0, 0.0, 4.0);
   ASSERT_NEAR(bundle_dist(bundle, 0.0, 4.0), 0.0, 0.0001);
 

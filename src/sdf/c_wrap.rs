@@ -28,8 +28,8 @@ pub unsafe extern "C" fn smoother_free(s: *mut SDFSmoother) {
 
 /// BUNDLE FUNCS
 #[no_mangle]
-pub unsafe extern "C" fn bundle_get() -> *mut SDFBundle {
-  return Box::into_raw(Box::new(SDFBundle::new()));
+pub unsafe extern "C" fn bundle_get(k: c_double) -> *mut SDFBundle {
+  return Box::into_raw(Box::new(SDFBundle::new_s(k)));
 }
 
 #[no_mangle]
@@ -57,12 +57,6 @@ pub unsafe extern "C" fn bundle_add_capsule(bundle: *mut SDFBundle, points: *mut
 pub unsafe extern "C" fn bundle_dist(bundle: *mut SDFBundle, x: c_double, y: c_double) -> c_double {
   let pt = glm::dvec2(x, y);
   return (*bundle).dist(&pt);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bundle_smin(bundle: *mut SDFBundle, x: c_double, y: c_double, k: c_double) -> c_double {
-  let pt = glm::dvec2(x, y);
-  return (*bundle).dist_smooth(&pt, k);
 }
 
 #[no_mangle]
