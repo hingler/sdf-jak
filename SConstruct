@@ -44,6 +44,7 @@ print(res)
 
 Default(res)
 
+print("constructed SDF!");
 
 Default(gtest_env.Program(base_dir + "/build/GTEST_sdfjak", test_deps))
 Return("res")

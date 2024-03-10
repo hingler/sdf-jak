@@ -32,6 +32,16 @@ impl SDFBundle {
   pub fn new() -> Self {
     return SDFBundle::new_s(0.0f64);
   }
+
+  pub fn copy(bundle: SDFBundle) -> Self {
+    return SDFBundle {
+      circles: bundle.circles.clone(),
+      capsules: bundle.capsules.clone(),
+      k: bundle.k,
+      fac: bundle.fac
+    }
+  }
+
   pub fn new_s(k_v: f64) -> Self {
 
     return SDFBundle {
@@ -47,6 +57,7 @@ impl SDFBundle {
   }
 
   pub fn add_capsule(&mut self, points: &Vec<DVec2>, radius: f64) {
+    println!("point count: {}", points.len());
     self.capsules.push(
       SDFCapsule::new(points, &radius)
     );

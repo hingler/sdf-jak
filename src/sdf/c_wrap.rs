@@ -33,6 +33,11 @@ pub unsafe extern "C" fn bundle_get(k: c_double) -> *mut SDFBundle {
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn bundle_copy(bundle: *mut SDFBundle) -> *mut SDFBundle {
+  return Box::into_raw(Box::new(SDFBundle::copy((*bundle).clone())));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn bundle_add_circle(bundle: *mut SDFBundle, x: c_double, y: c_double, radius: c_double) {
   (*bundle).add_circle(&x, &y, &radius);
 }
@@ -46,7 +51,7 @@ pub unsafe extern "C" fn bundle_add_capsule(bundle: *mut SDFBundle, points: *mut
   let mut point_cur: *mut glm::DVec2 = points_dvec;
   for _ in 0..point_count {
     // write manually lole
-    point_vec.push(*points_dvec);
+    point_vec.push(*point_cur);
     point_cur = point_cur.add(1);
   }
 

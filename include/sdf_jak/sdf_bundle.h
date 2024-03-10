@@ -22,6 +22,8 @@ void smoother_free(SDFSmoother* smoother);
 
 SDFBundle* bundle_get(double k);
 
+SDFBundle* bundle_copy(SDFBundle* bundle);
+
 // swag!
 // we're just having fun :3
 void bundle_add_circle(SDFBundle* bundle, double x, double y, double radius);
