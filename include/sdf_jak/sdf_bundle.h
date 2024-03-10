@@ -26,8 +26,15 @@ SDFBundle* bundle_copy(SDFBundle* bundle);
 
 // swag!
 // we're just having fun :3
+
+// creates a new circle
 void bundle_add_circle(SDFBundle* bundle, double x, double y, double radius);
+
+// creates a new capsule
 void bundle_add_capsule(SDFBundle* bundle, const double* points, unsigned int point_count, double radius);
+
+// creates a new capsule w variable width
+void bundle_add_capsule_var(SDFBundle* bundle, const double* points, const double* rads, unsigned int point_count);
 
 double bundle_dist(SDFBundle* bundle, double x, double y);
 

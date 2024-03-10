@@ -6,6 +6,58 @@ pub struct SDFCircle {
   radius: f64
 }
 
+fn closest_point(seg_a: &DVec2, seg_b: &DVec2, point: &DVec2) -> DVec2 {
+  // b - a is line len
+  // normalize
+  let seg_rect = Rect::from(seg_a, seg_b);
+
+  // deref isnt great here, and we make a bunch of copies (afaik) simply bc these operators make a ton of copies
+  // (doing the math in reference would be better - this lib is a bit shite i guess :3)
+
+  let line = glm::normalize(*seg_b - *seg_a);
+  // get dist from point to either endpoint
+  let dist_to_end = *seg_b - *point;
+  let proj_len = glm::dot(dist_to_end, line);
+  // project onto b-a  to get dist, subtract from dist to get perp component
+  let perp_dist = dist_to_end - (line * glm::dvec2(proj_len, proj_len));
+
+  // for variable width: want to return this, as well as the indices of the neighboring points
+  let closest_point = *point + perp_dist;
+  if seg_rect.test(&closest_point) {
+    return closest_point;
+  } else {
+    let dist_to_start = *seg_a - *point;
+    if glm::length(dist_to_start) < glm::length(dist_to_end) {
+      return *seg_a;
+    } else {
+      return *seg_b;
+    }
+  }
+}
+
+fn dist_segments_variable(seg_a: &DVec2, width_a: f64, seg_b: &DVec2, width_b: f64, point: &DVec2) -> f64 {
+  let min_point = closest_point(seg_a, seg_b, point);
+
+  let min_dist = glm::length(*point - min_point);
+
+  let t: f64;
+  let seg_length = glm::length(*seg_b - *seg_a);
+  if seg_length < 0.00001 {
+    t = 0.0;
+  } else {
+    t = glm::length(min_point - *seg_a) / seg_length;
+  }
+
+  let target_radius = (width_b - width_a) * t + width_a;
+
+  return min_dist - target_radius;
+}
+
+fn dist_segments(seg_a: &DVec2, seg_b: &DVec2, point: &DVec2) -> f64 {
+  let min_point = closest_point(seg_a, seg_b, point);
+  return glm::length(*point - min_point);
+}
+
 
 #[derive(Clone)]
 pub struct SDFLine {
@@ -15,7 +67,7 @@ pub struct SDFLine {
 #[derive(Clone)]
 pub struct SDFCapsule {
   path: SDFLine,
-  radius: f64
+  radius: Vec<f64>
 }
 
 impl SDFCircle {
@@ -41,16 +93,33 @@ impl SDFLine {
 
 impl SDFCapsule {
   pub fn new(points: &Vec<DVec2>, radius: &f64) -> Self {
+    let mut vec = Vec::new();
+    for _ in 0..points.len() {
+      vec.push(*radius);
+    }
+
     return SDFCapsule {
       path: SDFLine::new(points),
-      radius: *radius
+      radius: vec
     };
   }
 
-  pub fn new_move(points: Vec<DVec2>, radius: &f64) -> Self {
+  pub fn new_variable(points: Vec<DVec2>, rads: Vec<f64>) -> Self {
     return SDFCapsule {
       path: SDFLine::new_move(points),
-      radius: *radius
+      radius: rads
+    }
+  }
+
+  pub fn new_move(points: Vec<DVec2>, radius: &f64) -> Self {
+    let mut vec = Vec::new();
+    for _ in 0..points.len() {
+      vec.push(*radius);
+    }
+
+    return SDFCapsule {
+      path: SDFLine::new_move(points),
+      radius: vec
     };
   }
 }
@@ -69,32 +138,6 @@ impl Marchable for SDFCircle {
   }
 }
 
-impl SDFLine {
-  fn dist_segments(seg_a: &DVec2, seg_b: &DVec2, point: &DVec2) -> f64 {
-    // b - a is line len
-    // normalize
-    let seg_rect = Rect::from(seg_a, seg_b);
-
-    // deref isnt great here, and we make a bunch of copies (afaik) simply bc these operators make a ton of copies
-    // (doing the math in reference would be better - this lib is a bit shite i guess :3)
-
-    let line = glm::normalize(*seg_b - *seg_a);
-    // get dist from point to either endpoint
-    let dist_to_end = *seg_b - *point;
-    let proj_len = glm::dot(dist_to_end, line);
-    // project onto b-a  to get dist, subtract from dist to get perp component
-    let perp_dist = dist_to_end - (line * glm::dvec2(proj_len, proj_len));
-
-    let closest_point = *point + perp_dist;
-    if seg_rect.test(&closest_point) {
-      return glm::length(perp_dist);
-    }
-
-    let dist_to_start = *seg_a - *point;
-    return f64::min(glm::length(dist_to_start), glm::length(dist_to_end));
-  }
-}
-
 // smoothing: how?
 // - smooth btwn batches
 
@@ -105,7 +148,7 @@ impl Marchable for SDFLine {
       let seg_a = self.points.get(i - 1).unwrap();
       let seg_b = self.points.get(i).unwrap();
 
-      min_dist = f64::min(min_dist, SDFLine::dist_segments(seg_a, seg_b, point));
+      min_dist = f64::min(min_dist, dist_segments(seg_a, seg_b, point));
     }
 
     return min_dist;
@@ -114,7 +157,25 @@ impl Marchable for SDFLine {
 
 impl Marchable for SDFCapsule {
   fn dist(&self, point: &DVec2) -> f64 {
-    return self.path.dist(point) - self.radius;
+
+    let mut min_dist = f64::MAX;
+    for i in 1..self.path.points.len() {
+      let seg_a = self.path.points.get(i - 1).unwrap();
+      let seg_b = self.path.points.get(i).unwrap();
+
+      let rad_a = self.radius.get(i - 1).unwrap();
+      let rad_b = self.radius.get(i).unwrap();
+
+      min_dist = f64::min(min_dist, dist_segments_variable(
+        seg_a,
+        *rad_a,
+        seg_b,
+        *rad_b,
+        point
+      ))
+    }
+
+    return min_dist;
   }
 }
 

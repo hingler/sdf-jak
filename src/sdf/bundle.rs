@@ -63,6 +63,12 @@ impl SDFBundle {
     );
   }
 
+  pub fn add_capsule_var(&mut self, points: Vec<DVec2>, rads: Vec<f64>) {
+    self.capsules.push(
+      SDFCapsule::new_variable(points, rads)
+    );
+  }
+
   pub fn add_capsule_move(&mut self, points: Vec<DVec2>, radius: f64) {
     self.capsules.push(
       SDFCapsule::new_move(points, &radius)

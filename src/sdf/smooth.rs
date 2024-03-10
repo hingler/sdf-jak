@@ -7,7 +7,7 @@ use super::{bundle::SDFBundle, sdf_type::Marchable};
 #[repr(C)]
 pub struct  SDFSmooth<T: Marchable, U: Marchable> {
   a: T,
-  b: U,
+  b: U,  
   k: f64,
   fac: f64
 }

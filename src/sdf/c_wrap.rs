@@ -34,7 +34,7 @@ pub unsafe extern "C" fn bundle_get(k: c_double) -> *mut SDFBundle {
 
 #[no_mangle]
 pub unsafe extern "C" fn bundle_copy(bundle: *mut SDFBundle) -> *mut SDFBundle {
-  return Box::into_raw(Box::new(SDFBundle::copy((*bundle).clone())));
+  return Box::into_raw(Box::new((*bundle).clone()));
 }
 
 #[no_mangle]
@@ -57,6 +57,32 @@ pub unsafe extern "C" fn bundle_add_capsule(bundle: *mut SDFBundle, points: *mut
 
   (*bundle).add_capsule_move(point_vec, radius);
 }
+
+// need to write some tests for the logic here
+
+#[no_mangle]
+pub unsafe extern "C" fn bundle_add_capsule_var(bundle: *mut SDFBundle, points: *mut c_double, rads: *mut c_double, point_count: c_uint) {
+  let points_cvec = points as *mut glm::DVec2;
+  let rads_cvec = rads as *mut f64;
+
+  let mut point_vec = Vec::new();
+  let mut rads_vec  = Vec::new();
+  
+  let mut point_cur = points_cvec;
+  let mut rads_cur  = rads_cvec;
+
+  for _ in 0..point_count {
+    point_vec.push(*point_cur);
+    rads_vec.push(*rads_cur);
+
+    point_cur = point_cur.add(1);
+    rads_cur = rads_cur.add(1);
+  }
+
+  (*bundle).add_capsule_var(point_vec, rads_vec);
+}
+
+
 
 #[no_mangle]
 pub unsafe extern "C" fn bundle_dist(bundle: *mut SDFBundle, x: c_double, y: c_double) -> c_double {
