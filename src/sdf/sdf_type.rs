@@ -1,4 +1,4 @@
-use glm::DVec2;
+use glm::{dvec2, sqrt, DVec2};
 
 #[derive(Clone, Copy)]
 pub struct SDFCircle {
@@ -33,24 +33,6 @@ fn closest_point(seg_a: &DVec2, seg_b: &DVec2, point: &DVec2) -> DVec2 {
       return *seg_b;
     }
   }
-}
-
-fn dist_segments_variable(seg_a: &DVec2, width_a: f64, seg_b: &DVec2, width_b: f64, point: &DVec2) -> f64 {
-  let min_point = closest_point(seg_a, seg_b, point);
-
-  let min_dist = glm::length(*point - min_point);
-
-  let t: f64;
-  let seg_length = glm::length(*seg_b - *seg_a);
-  if seg_length < 0.00001 {
-    t = 0.0;
-  } else {
-    t = glm::length(min_point - *seg_a) / seg_length;
-  }
-
-  let target_radius = (width_b - width_a) * t + width_a;
-
-  return min_dist - target_radius;
 }
 
 fn dist_segments(seg_a: &DVec2, seg_b: &DVec2, point: &DVec2) -> f64 {
@@ -155,6 +137,32 @@ impl Marchable for SDFLine {
   }
 }
 
+// https://www.shadertoy.com/view/4lcBWn from iq
+fn dist_capsule(input_point: &DVec2, pa: DVec2, point_b: DVec2, rad_a: f64, rad_b: f64) -> f64 {
+  let point  = *input_point - pa;
+  let pb =     point_b - pa;
+  // len-sqr
+  let h = glm::dot(pb, pb);
+  let mut q = dvec2(glm::dot(point, dvec2(pb.y, -pb.x)), glm::dot(point, pb)) / h;
+
+  q.x = glm::abs(q.x);
+
+  let b = rad_a - rad_b;
+  let c = dvec2(glm::sqrt(f64::max(h - b * b, 0.00001)), b);
+
+  let k = c.x * q.y - c.y * q.x;
+  let m = glm::dot(c, q);
+  let n = glm::dot(q, q);
+
+  if k < 0.0 {
+    return sqrt(h * n) - rad_a;
+  } else if k > c.x {
+    return sqrt(h * (n + 1.0 - 2.0 * q.y)) - rad_b;
+  }
+  
+  return m - rad_a;
+}
+
 impl Marchable for SDFCapsule {
   fn dist(&self, point: &DVec2) -> f64 {
 
@@ -166,12 +174,12 @@ impl Marchable for SDFCapsule {
       let rad_a = self.radius.get(i - 1).unwrap();
       let rad_b = self.radius.get(i).unwrap();
 
-      min_dist = f64::min(min_dist, dist_segments_variable(
-        seg_a,
+      min_dist = f64::min(min_dist, dist_capsule(
+        point,
+        seg_a.clone(),
+        seg_b.clone(),
         *rad_a,
-        seg_b,
-        *rad_b,
-        point
+        *rad_b
       ))
     }
 

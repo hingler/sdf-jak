@@ -28,7 +28,7 @@ mod tests {
       vec![2.0, 6.0]
     );
 
-    let mut v = DVec2::new(1.5, 0.1);
+    let mut v = DVec2::new(0.0, 1.5);
     // frustum shape
     assert!(c.dist(&v) < 0.0);
     
