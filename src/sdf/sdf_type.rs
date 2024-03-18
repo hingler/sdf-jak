@@ -138,8 +138,8 @@ impl Marchable for SDFLine {
 }
 
 // https://www.shadertoy.com/view/4lcBWn from iq
-fn dist_capsule(input_point: &DVec2, pa: DVec2, point_b: DVec2, rad_a: f64, rad_b: f64) -> f64 {
-  let point  = *input_point - pa;
+fn dist_capsule(input_point: DVec2, pa: DVec2, point_b: DVec2, rad_a: f64, rad_b: f64) -> f64 {
+  let point  = input_point - pa;
   let pb =     point_b - pa;
   // len-sqr
   let h = glm::dot(pb, pb);
@@ -159,28 +159,37 @@ fn dist_capsule(input_point: &DVec2, pa: DVec2, point_b: DVec2, rad_a: f64, rad_
   } else if k > c.x {
     return sqrt(h * (n + 1.0 - 2.0 * q.y)) - rad_b;
   }
-  
+
   return m - rad_a;
 }
 
 impl Marchable for SDFCapsule {
   fn dist(&self, point: &DVec2) -> f64 {
 
+    let point_local = *point;
+
     let mut min_dist = f64::MAX;
     for i in 1..self.path.points.len() {
-      let seg_a = self.path.points.get(i - 1).unwrap();
-      let seg_b = self.path.points.get(i).unwrap();
+      let seg_a = self.path.points.get(i - 1).unwrap().clone();
+      let seg_b = self.path.points.get(i).unwrap().clone();
 
-      let rad_a = self.radius.get(i - 1).unwrap();
-      let rad_b = self.radius.get(i).unwrap();
+      let rad_a = self.radius.get(i - 1).unwrap().clone();
+      let rad_b = self.radius.get(i).unwrap().clone();
 
-      min_dist = f64::min(min_dist, dist_capsule(
-        point,
-        seg_a.clone(),
-        seg_b.clone(),
-        *rad_a,
-        *rad_b
-      ))
+      // test this later??
+      // let dist_a = glm::length(seg_a - point_local);
+      // let dist_local = glm::length(seg_b - seg_a);
+
+      // if dist_a < (dist_local + f64::max(rad_a, rad_b) + min_dist) {
+        min_dist = f64::min(min_dist, dist_capsule(
+          point_local,
+          seg_a,
+          seg_b,
+          rad_a,
+          rad_b
+        ));
+      // }
+
     }
 
     return min_dist;
@@ -200,14 +209,14 @@ impl Rect {
       x: f64::min(a.x, b.x),
       y: f64::min(a.y, b.y)
     };
-    
+
     let max = DVec2 {
       x: f64::max(a.x, b.x),
       y: f64::max(a.y, b.y)
     };
 
     return Rect {
-      start: min, 
+      start: min,
       end: max
     };
 

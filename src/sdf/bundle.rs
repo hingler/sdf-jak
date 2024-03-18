@@ -75,14 +75,6 @@ impl SDFBundle {
     );
   }
 
-  pub fn dist(&self, point: &glm::DVec2) -> f64 {
-    if self.k < EPSILON_K {
-      return self.dist_n(point);
-    } else {
-      return self.dist_s(point);
-    }
-  }
-
   pub fn dist_s(&self, point: &glm::DVec2) -> f64 {
     let mut dist = f64::MAX;
     for circle in &self.circles {
@@ -115,17 +107,12 @@ impl SDFBundle {
 // - i think we would smooth bundle-pairs on the c side
 
 impl Marchable for SDFBundle {
-  fn dist(&self, point: &DVec2) -> f64 {
-    let mut min_dist = f64::MAX;
-    for c in &self.circles {
-      min_dist = f64::min(min_dist, c.dist(point));
+  fn dist(&self, point: &glm::DVec2) -> f64 {
+    // slow if check?????
+    if self.k < EPSILON_K {
+      return self.dist_n(point);
+    } else {
+      return self.dist_s(point);
     }
-
-    for c in &self.capsules {
-      min_dist = f64::min(min_dist, c.dist(point));
-    }
-
-    // hehe smile
-    return min_dist * self.fac;
   }
 }
